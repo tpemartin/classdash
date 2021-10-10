@@ -24,8 +24,8 @@ Classdash <- function(ss){
 #' @examples none
 sheet_write_threadMsgInfoFromLinkAddress <- function(ss){
   messageId <- get_messageIdFromGitterMessageCopyLink()
-  threadMsg <- generate_threadMessageInfo(roomId = .roomId, messageId = messageId)
-  .sheetname <- get_sheetname()
+  threadMsg <- generate_threadMessageInfo(roomId = .GlobalEnv$.roomId, messageId = messageId)
+  .sheetname <- get_sheetname(threadMsg)
   sheet_write_threadMsgInfo(threadMsg = threadMsg,
     sheetname=.sheetname,
     ss=ss)
@@ -129,8 +129,8 @@ get_messageIdFromGitterMessageCopyLink <- function() {
   messageId <- stringr::str_extract(cliptext, "(?<=\\?at\\=).+")
   return(messageId)
 }
-get_sheetname <- function(){
-  (lubridate::today()+lubridate::days(1) - .startingSemester) /
+get_sheetname <- function(threadMsg){
+  (lubridate::ymd_hms(threadMsg$leadingMessage$sent)+lubridate::days(1) - .GlobalEnv$.startingSemester) /
     lubridate::dweeks(1) -> numberOfWeeks
   schoolWeeks <- ceiling(numberOfWeeks)
   paste0("week", schoolWeeks)

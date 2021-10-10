@@ -102,3 +102,26 @@ sheet_write_threadMsgInfo(threadMsg = threadMsg,
 
 ```
 
+## Google sheets formula
+
+```{r}
+ss <- googlesheets4::as_sheets_id("https://docs.google.com/spreadsheets/d/1LSjsiUQ3WHoWa-2767y_fs3qSwS9GDnxQlF5Hq6VJ0c/edit#gid=1129935409")
+sheetname = "week4"
+newColLetter = "D"
+dd <- googlesheets4::range_read(ss,
+  sheet=sheetname,
+  range = "C1:C1")
+messageId <- "615c2c13a41fd20699c6eb73"
+names(dd)[[1]] -> link
+linkContent <- glue::glue("=HYPERLINK(\"{link}\",\"{messageId}\")")
+googlesheets4::range_write(
+  ss,
+  data = as.data.frame(
+    googlesheets4::gs4_formula(linkContent)
+  ),
+  sheet=sheetname,
+  range="C1:C1",
+  col_names = F
+)
+```
+
