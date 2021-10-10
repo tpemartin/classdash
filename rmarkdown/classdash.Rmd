@@ -1,0 +1,104 @@
+
+
+```{r}
+library(gitterhub)
+```
+
+```{r}
+gt <- gitterService()
+```
+
+
+```{r}
+gitter <- list()
+gitter$groupId <- "614a89a76da037398486382a"
+groups <- gt$list_groups()
+groups <- gt$list_groupsAsDataframe() 
+
+gitter$rooms <- gt$list_roomsUnderAGroupAsDataFrame(groupId = gitter$groupId)
+
+gitter$roomIds <- as.list(gitter$rooms$id) |>
+  setNames(gitter$rooms$name)
+gitter$room_name <- "110-1-r4ds/main"
+
+saveRDS(gitter, file="class_gitter.Rds")
+gitter$roomIds$`110-1-r4ds/main`
+```
+
+```{r}
+.roomId = gitter$roomIds$`110-1-r4ds/main`
+postClipboard2Gitterchat <- function(){
+  assertthat::assert_that(
+    exists(".roomId", envir=.GlobalEnv),
+    msg=".roomId does not exist in Global environment"
+  )
+  clipr::read_clip() |>
+    paste0(collapse="\n") |>
+    gitterhub::postMessageToARoom(
+      roomId = .roomId
+    )
+}
+```
+
+```{r}
+messageId <- get_messageIdFromGitterMessageCopyLink()
+threadMsg <- generate_threadMessageInfo(roomId = roomId, messageId = messageId)
+
+sheet_write_threadMsgInfo(threadMsg = threadMsg,
+  sheetname=sheetname,
+  ss=gitter$googleSheets$ss)
+```
+
+```{r}
+.startingSemester <- lubridate::ymd("2021-9-19")
+ 
+
+
+```
+
+```{r}
+lubridate::dweeks(1)
+```
+
+
+```{r}
+messageId
+sheetname = "week4"
+roomId <- gitter$roomIds$`110-1-r4ds/main`
+```
+
+
+```{r}
+threadMsg <- gitterhub:::get_threadMessagesInRoomFromAMessage(
+  roomId,
+  messageId
+)
+
+```
+
+```{r}
+roomId <- gitter$roomIds$`110-1-r4ds/main`
+messageId <- "615c59ac9d20982e4fa20d99"
+threadMsg <- generate_threadMessageInfo(roomId = roomId, messageId = messageId)
+
+browseURL(threadMsg$url)
+```
+
+
+```{r}
+library(googlesheets4)
+googlesheets4::gs4_create(
+  name="110-1-r4ds-gitterMonitor"
+) -> gitter$googleSheets$ss
+```
+
+```{r}
+sheetname = "week4"
+
+sheet_write_threadMsgInfo(threadMsg = threadMsg,
+  sheetname="week4",
+  ss=gitter$googleSheets$ss)
+
+
+```
+
