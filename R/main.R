@@ -101,24 +101,69 @@ sheet_write_threadMsgInfo <- function(threadMsg, sheetname, ss,
     googlesheets4::sheet_properties(ss) ->
       sheetsProperties
   }
-  newColLetter <- LETTERS[[sheetsProperties$grid_columns+1]]
+  {
+    if(is.null(sheetsProperties$name) || !(sheetname %in% sheetsProperties$name)){
+      googlesheets4::sheet_add(ss, sheet=sheetname)
 
+      newColLetter <- get_newColLetter(ss, sheetname)
+      googlesheets4::range_write(
+        ss,
+        data=as.data.frame(c("Url",
+          "Poster",
+          "First Reply Timelapse",
+          "Repliers")),
+        sheet=sheetname,
+        range="A1",
+        col_names = F
+      )
+
+    }
+  }
+
+  newColLetter <- get_newColLetter(ss, sheetname)
   repliers <- if(unique_repliers){
     unique(threadMsg$repliers)
   } else {
     threadMsg$repliers
   }
-  googlesheets4::range_write(
-    data = as.data.frame(c(threadMsg$url,
-      threadMsg$poster,
-      round(threadMsg$firstReplyTime, 2),
-      repliers
-    )),
-    sheet=sheetname,
-    range=glue::glue("{newColLetter}1"),
-    ss=ss,
-    col_names = F
-  )
+
+  {
+    linkContent <-
+      glue::glue(glue::glue("=HYPERLINK(\"{threadMsg$url}\",\"{threadMsg$leadingMessage$id}\")"))
+    .range <- glue::glue("{newColLetter}1:{newColLetter}1")
+    googlesheets4::range_write(
+      ss,
+      data = as.data.frame(
+        googlesheets4::gs4_formula(linkContent)
+      ),
+      sheet=sheetname,
+      range=.range,
+      col_names = F
+    )
+
+    googlesheets4::range_write(
+      data = as.data.frame(c(
+        threadMsg$poster,
+        round(threadMsg$firstReplyTime, 2),
+        repliers
+      )),
+      sheet=sheetname,
+      range=glue::glue("{newColLetter}2"),
+      ss=ss,
+      col_names = F
+    )
+  }
+  # googlesheets4::range_write(
+  #   data = as.data.frame(c(threadMsg$url,
+  #     threadMsg$poster,
+  #     round(threadMsg$firstReplyTime, 2),
+  #     repliers
+  #   )),
+  #   sheet=sheetname,
+  #   range=glue::glue("{newColLetter}1"),
+  #   ss=ss,
+  #   col_names = F
+  # )
 }
 get_messageIdFromGitterMessageCopyLink <- function() {
   clipr::read_clip() -> cliptext
@@ -130,7 +175,9 @@ get_messageIdFromGitterMessageCopyLink <- function() {
   return(messageId)
 }
 get_sheetname <- function(threadMsg){
-  (lubridate::ymd_hms(threadMsg$leadingMessage$sent)+lubridate::days(1) - .GlobalEnv$.startingSemester) /
+  postingDate <- lubridate::ymd_hms(threadMsg$leadingMessage$sent)
+
+  (lubridate::date(postingDate)+lubridate::days(1) - .GlobalEnv$.startingSemester) /
     lubridate::dweeks(1) -> numberOfWeeks
   schoolWeeks <- ceiling(numberOfWeeks)
   paste0("week", schoolWeeks)
@@ -140,5 +187,11 @@ getAMessage <- function(roomId, messageId) {
   getAMessage_apiFun <- gitterhub:::gitter_apiFunctional(postingMessage)
   getAMessage_apiFun() -> response
   invisible(response)
+}
+get_newColLetter <- function(ss, sheetname){
+  sheetTarget <- googlesheets4::read_sheet(ss, sheet=sheetname)
+  ncol <- dim(sheetTarget)[[2]]
+  newColLetter <- LETTERS[[ncol+1]]
+  return(newColLetter)
 }
 
