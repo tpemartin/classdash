@@ -1,4 +1,9 @@
 
+```{r}
+devtools::install_github("tpemartin/gitterhub")
+devtools::install_github("tpemartin/classdash")
+```
+
 
 ```{r}
 library(gitterhub)

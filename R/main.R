@@ -13,6 +13,8 @@ Classdash <- function(ss){
     sheet_write_threadMsgInfoFromLinkAddress(ss)
   }
 
+  classdash$refresh_document <- refresh_document
+
   return(classdash)
 }
 #' Extract a gitter thread info and write to google sheet
