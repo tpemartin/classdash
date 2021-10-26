@@ -5,7 +5,7 @@
 #'
 #' @examples none
 Classdash <- function(ss){
-  classdash <- list()
+  classdash <- new.env()
 
   classdash$postClipboard2Gitterchat <- postClipboard2Gitterchat
 
@@ -14,6 +14,19 @@ Classdash <- function(ss){
   }
 
   classdash$refresh_document <- refresh_document
+
+  classdash$github$initiate <- function(){
+    assertthat::assert_that(
+      exists(".owner", envir = .GlobalEnv)
+      && exists(".repo", envir = .GlobalEnv),
+      msg="no .owner or .repo in global environment"
+    )
+    classdash$github$gh <- gitterhub::githubService()
+    classdash$github$getCommentsFromIssueLink <- function(){
+      clipr::read_clip() -> issueUrl
+      classdash$github$gh$list_issue_commentsFromIssueUrl(issueUrl)
+    }
+  }
 
   return(classdash)
 }
